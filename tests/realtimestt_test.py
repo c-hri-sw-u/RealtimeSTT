@@ -1,3 +1,5 @@
+# realtimestt_test.py
+
 EXTENDED_LOGGING = False
 
 # set to 0 to deactivate writing to keyboard
@@ -184,6 +186,13 @@ if __name__ == '__main__':
         'faster_whisper_vad_filter': False,
     }
 
+    # Remove unsupported parameters
+    unsupported = ['download_root', 'initial_prompt_realtime', 'faster_whisper_vad_filter']
+    for param in unsupported:
+        if param in recorder_config:
+            print(f"Removing unsupported parameter: {param}")
+            del recorder_config[param]
+
     args = parser.parse_args()
     if args.model is not None:
         recorder_config['model'] = args.model
@@ -200,6 +209,29 @@ if __name__ == '__main__':
 
     if EXTENDED_LOGGING:
         recorder_config['level'] = logging.DEBUG
+
+    # 添加调试代码
+    print("=== DEBUG INFO ===")
+    print(f"recorder_config keys: {list(recorder_config.keys())}")
+    print(f"download_root value: {recorder_config.get('download_root', 'NOT_FOUND')}")
+
+    # 检查运行时的 AudioToTextRecorder
+    from RealtimeSTT import AudioToTextRecorder
+    import inspect
+    sig = inspect.signature(AudioToTextRecorder.__init__)
+    actual_params = list(sig.parameters.keys())
+    print(f"AudioToTextRecorder actual params count: {len(actual_params)}")
+    print(f"download_root in params: {'download_root' in actual_params}")
+
+    # 找出不支持的参数
+    unsupported = [k for k in recorder_config.keys() if k not in actual_params]
+    if unsupported:
+        print(f"Unsupported params: {unsupported}")
+    else:
+        print("All params are supported")
+
+    print("=== END DEBUG ===")
+
 
     recorder = AudioToTextRecorder(**recorder_config)
     
